@@ -1,0 +1,36 @@
+// src/navigation/DashboardTabs.tsx
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
+
+import DashboardScreen from '../screens/DashboardScreen';
+import LogMealScreen from '../screens/LogMealScreen';
+import SetGoalScreen from '../screens/SetGoalScreen';
+
+const Tab = createBottomTabNavigator();
+
+export default function DashboardTabs() {
+  return (
+    <Tab.Navigator
+      initialRouteName="Dashboard"
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap;
+
+          if (route.name === 'Dashboard') iconName = 'home';
+          else if (route.name === 'LogMeal') iconName = 'restaurant';
+          else iconName = 'locate';
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        headerShown: true,
+        tabBarActiveTintColor: '#2E7D32',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="LogMeal" component={LogMealScreen} />
+      <Tab.Screen name="SetGoal" component={SetGoalScreen} />
+    </Tab.Navigator>
+  );
+}
