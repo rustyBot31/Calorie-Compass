@@ -25,14 +25,14 @@ import { getCurrentUserUid } from '../utils/firebaseAuthApi';
 
 export default function LogMealScreen() {
   const [meal, setMeal] = useState('');
-  const [calories, setCalories] = useState(null);
+  const [calories, setCalories] = useState<number | null>(null);;
   const [tip, setTip] = useState('');
   const [accepted, setAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const [totalCaloriesToday, setTotalCaloriesToday] = useState(null);
-  const [dailyGoal, setDailyGoal] = useState(null);
+  const [totalCaloriesToday, setTotalCaloriesToday] = useState<number | null>(null);;
+  const [dailyGoal, setDailyGoal] = useState<number | null>(null);
 
   // Refresh status and goal when screen gains focus
   useFocusEffect(
