@@ -31,7 +31,3 @@
 Contributions and feedback are welcome! Feel free to open issues or submit PRs.
 
 ---
-
-## 🪪 License
-
-MIT License © 2025 [rustyBot31](https://github.com/rustyBot31)
