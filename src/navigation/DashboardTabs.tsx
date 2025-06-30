@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import DashboardScreen from '../screens/DashboardScreen';
 import LogMealScreen from '../screens/LogMealScreen';
 import SetGoalScreen from '../screens/SetGoalScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -19,7 +20,8 @@ export default function DashboardTabs() {
 
           if (route.name === 'Dashboard') iconName = 'home';
           else if (route.name === 'LogMeal') iconName = 'restaurant';
-          else iconName = 'locate';
+          else if(route.name === 'SetGoal') iconName = 'locate';
+          else iconName='person';
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -31,6 +33,7 @@ export default function DashboardTabs() {
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="LogMeal" component={LogMealScreen} />
       <Tab.Screen name="SetGoal" component={SetGoalScreen} />
+      <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
