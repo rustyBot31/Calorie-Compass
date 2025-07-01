@@ -35,3 +35,10 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# 🔒 Sensitive project files
+envVar.ts
+backend/envVarBackend.js
+backend/serviceAccountKey.json
+
+package-lock.json
