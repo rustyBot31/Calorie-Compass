@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { sendPasswordResetEmail } from '../utils/firebaseAuthApi';
+import { resetPassword } from '../utils/firebaseAuthApi';
 
 export default function ForgotPasswordScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ export default function ForgotPasswordScreen({ navigation }: any) {
     }
 
     try {
-      await sendPasswordResetEmail(email);
+      await resetPassword(email);
       Alert.alert(
         'Email Sent',
         'A password reset link has been sent to your email.'

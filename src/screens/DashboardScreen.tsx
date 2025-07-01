@@ -17,10 +17,10 @@ import MealHistoryItem from '../components/mealHistoryItem';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import {
-  getDailyGoal,
   getTodayStatus,
   getRecentMeals,
 } from '../utils/geminiApi';
+import { getDailyGoal } from '../utils/goalApi';
 
 const generalTips = [
   'Stay hydrated! Water supports every system in your body.',
@@ -96,19 +96,9 @@ export default function DashboardScreen({ navigation }: any) {
     }, [])
   );
 
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('userToken');
-      navigation.replace('Login');
-    } catch (error) {
-      Alert.alert('Logout Failed', 'Something went wrong while logging out.');
-    }
-  };
-
   // Tip and color logic
   let tipMessage = '';
   let progressColor = '#4CAF50'; // default green
-
   if (consumed !== null && dailyGoal) {
     const percent = (consumed / dailyGoal) * 100;
     if (percent >= 100) {
@@ -128,12 +118,6 @@ export default function DashboardScreen({ navigation }: any) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.logoutContainer}>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#d32f2f" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
 
       <Header title="Hello, welcome back!" />
 
