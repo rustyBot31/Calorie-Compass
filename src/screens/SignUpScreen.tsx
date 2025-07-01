@@ -1,30 +1,53 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
-import { signUpWithEmail } from '../utils/firebaseAuthApi';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  Alert,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { signUpWithEmail } from '../utils/firebaseAuthApi';
 import { BASE_URL } from '../utils/firestoreApi';
 
 export default function SignUpScreen({ navigation }: any) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    if (!name.trim()) {
-      Alert.alert('Validation Error', 'Name is required');
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedPassword) {
+      Alert.alert('Validation Error', 'Please fill in all fields.');
       return;
     }
 
-    const result = await signUpWithEmail(email, password);
+    setLoading(true);
+    const result = await signUpWithEmail(trimmedEmail, trimmedPassword);
+    setLoading(false);
 
-    if (result.error || result.error?.message) {
-      Alert.alert('Sign Up Failed', result.error?.message || 'Unknown error');
-    } else if (result.localId) {
-      // Save to AsyncStorage
+    if (result?.error?.message) {
+      const msg = result.error.message;
+      console.log(msg);
+      if (msg.includes('EMAIL_EXISTS')) {
+        Alert.alert('Sign Up Failed', 'An account with this email already exists.');
+        
+      } else {
+        Alert.alert('Sign Up Failed', msg);
+      }
+      return;
+    }
+
+    if (result?.localId && result?.idToken) {
       await AsyncStorage.setItem('userId', result.localId);
       await AsyncStorage.setItem('userToken', result.idToken);
 
-      // Save name/email to Firestore
       try {
         await fetch(`${BASE_URL}/users/${result.localId}`, {
           method: 'PATCH',
@@ -34,28 +57,27 @@ export default function SignUpScreen({ navigation }: any) {
           },
           body: JSON.stringify({
             fields: {
-              name: { stringValue: name },
-              email: { stringValue: email },
+              name: { stringValue: trimmedName },
+              email: { stringValue: trimmedEmail },
             },
           }),
         });
       } catch (err) {
-        console.error('Failed to store user profile:', err);
+        console.error('Failed to save user profile:', err);
         Alert.alert('Warning', 'Signed up, but failed to save profile info.');
       }
 
       navigation.replace('Dashboard');
     } else {
-      Alert.alert('Sign Up Failed', 'Unexpected error. Try again.');
+      Alert.alert('Sign Up Failed', 'Unexpected error. Please try again.');
     }
   };
 
   return (
     <View style={styles.container}>
-
-      <Text style={styles.appTitle}>CalorieCompass🧭</Text>
+      <Text style={styles.appTitle}>CalorieCompass 🧭</Text>
       <Text style={styles.title}>Your Personalized Calorie Tracker!</Text>
-      <Text style={styles.subtitle}>Hello there!👋</Text>
+      <Text style={styles.subtitle}>Hello there! 👋</Text>
 
       <TextInput
         style={styles.input}
@@ -66,11 +88,12 @@ export default function SignUpScreen({ navigation }: any) {
       />
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Email Address"
         placeholderTextColor="#aaa"
         value={email}
         onChangeText={setEmail}
         autoCapitalize="none"
+        keyboardType="email-address"
       />
       <TextInput
         style={styles.input}
@@ -81,8 +104,16 @@ export default function SignUpScreen({ navigation }: any) {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleSignUp}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Sign Up</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -111,14 +142,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     fontWeight: '500',
-    marginBottom: 32,
+    marginBottom: 8,
     color: '#2e7d32',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
     fontWeight: '400',
-    marginBottom: 32,
+    marginBottom: 24,
     color: '#2e7d32',
     textAlign: 'center',
   },
@@ -137,17 +168,18 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     marginBottom: 16,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    textAlign: 'center',
     fontWeight: '500',
   },
   link: {
     color: '#555',
     fontSize: 15,
     textAlign: 'center',
+    marginTop: 4,
   },
   linkBold: {
     color: '#2e7d32',

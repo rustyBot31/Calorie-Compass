@@ -6,6 +6,7 @@ import {
   Text,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginWithEmail } from '../utils/firebaseAuthApi';
@@ -13,24 +14,52 @@ import { loginWithEmail } from '../utils/firebaseAuthApi';
 export default function LoginScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    const result = await loginWithEmail(email, password);
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
 
-    if (result.error || result.error?.message) {
-      Alert.alert('Login Failed', result.error?.message || 'Unknown error');
-    } else if (result.localId) {
-      await AsyncStorage.setItem('userId', result.localId);
-      await AsyncStorage.setItem('userToken', result.idToken);
-      navigation.replace('Dashboard');
-    } else {
-      Alert.alert('Login Failed', 'Unexpected error. Try again.');
+    if (!trimmedEmail || !trimmedPassword) {
+      Alert.alert('Missing Fields', 'Please enter both email and password.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await loginWithEmail(trimmedEmail, trimmedPassword);
+      setLoading(false);
+
+      if (result?.error) {
+        const errorMsg = result.error.message || 'Unknown error occurred';
+
+        if (
+          errorMsg.includes('INVALID_LOGIN_CREDENTIALS')
+        ) {
+          Alert.alert('Login Failed', 'Invalid email or password. Please try again.');
+        } else if (errorMsg.includes('TOO_MANY_ATTEMPTS_TRY_LATER')) {
+          Alert.alert('Login Blocked', 'Too many failed attempts. Please try again later.');
+        } else {
+          Alert.alert('Login Error', errorMsg);
+        }
+      } else if (result?.localId) {
+        await AsyncStorage.setItem('userId', result.localId);
+        await AsyncStorage.setItem('userToken', result.idToken);
+        navigation.replace('Dashboard');
+      } else {
+        Alert.alert('Login Failed', 'Unexpected error. Please try again.');
+      }
+    } catch (err: any) {
+      setLoading(false);
+      console.error('Login error:', err);
+      Alert.alert('Login Failed', 'Something went wrong. Please check your network and try again.');
     }
   };
 
+
   return (
     <View style={styles.container}>
-      <Text style={styles.appTitle}>CalorieCompass🧭</Text>
+      <Text style={styles.appTitle}>CalorieCompass 🧭</Text>
       <Text style={styles.title}>Your Personalized Calorie Tracker!</Text>
       <Text style={styles.subtitle}>Welcome Back 👋</Text>
 
@@ -53,8 +82,16 @@ export default function LoginScreen({ navigation }: any) {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Log In</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Log In</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
@@ -88,14 +125,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 25,
     fontWeight: '500',
-    marginBottom: 32,
+    marginBottom: 8,
     color: '#2e7d32',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
     fontWeight: '400',
-    marginBottom: 32,
+    marginBottom: 24,
     color: '#2e7d32',
     textAlign: 'center',
   },
@@ -114,17 +151,18 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     marginBottom: 16,
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    textAlign: 'center',
     fontWeight: '500',
   },
   link: {
     color: '#555',
     fontSize: 15,
     textAlign: 'center',
+    marginTop: 4,
   },
   linkBold: {
     color: '#2e7d32',

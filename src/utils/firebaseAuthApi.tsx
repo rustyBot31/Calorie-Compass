@@ -18,7 +18,7 @@ export async function signUpWithEmail(email: string, password: string) {
 
   const data = await res.json();
 
-  if (!res.ok) throw new Error(data.error?.message || 'Signup failed');
+  if (!res.ok) return { error: data.error };
 
   await AsyncStorage.setItem('userToken', data.idToken);
   await AsyncStorage.setItem('userId', data.localId);
@@ -40,7 +40,7 @@ export async function loginWithEmail(email: string, password: string) {
 
   const data = await res.json();
 
-  if (!res.ok) throw new Error(data.error?.message || 'Login failed');
+  if (!res.ok) return { 'error' : data.error}
 
   await AsyncStorage.setItem('userToken', data.idToken);
   await AsyncStorage.setItem('userId', data.localId);
