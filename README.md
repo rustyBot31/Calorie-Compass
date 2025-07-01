@@ -90,7 +90,7 @@ module.exports = {
 }
 ```
 
-# How to get your serviceAccountKey
+### How to get your serviceAccountKey
 1. Go to Firebase console
 2. Select your project
 3. Navigate to Project Settings (⚙️ gear icon in the top left)
