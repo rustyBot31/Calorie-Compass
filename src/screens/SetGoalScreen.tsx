@@ -72,6 +72,10 @@ export default function SetGoalScreen() {
         locked ? 'Goal saved and locked for today!' : 'Goal saved for today!'
       );
       setIsLockedForToday(locked);
+
+      // ✅ Refetch recent goals to update list immediately
+      const updatedGoals = await getRecentGoalsWithStatus(uid);
+      setRecentGoals(updatedGoals);
     } catch (err) {
       console.error(err);
       Alert.alert('Error', 'Failed to save goal.');
