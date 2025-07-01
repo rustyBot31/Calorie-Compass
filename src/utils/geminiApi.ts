@@ -1,7 +1,7 @@
 import { getCurrentUserUid } from './firebaseAuthApi';
 import axios from 'axios';
-
-const BASE_URL = ''; // Replace with your backend URL
+import { BACKEND_URL } from '../../envVar';
+const BASE_URL = BACKEND_URL; // Replace with your backend URL
 
 let cacheCalories = 0;
 let cacheTip = '';
@@ -26,11 +26,7 @@ export interface GoalData {
   goal: number;
 }
 
-export interface LockedGoal {
-  goal: number;
-  date: string;
-  met: boolean;
-}
+
 
 // 1. Estimate calories using Gemini
 export async function previewCalories(meal: string): Promise<CalorieEstimation> {
@@ -80,13 +76,6 @@ export async function getTodayStatus(uid: string): Promise<DailyStatus> {
   return await response.json();
 }
 
-// 4. Get today's goal
-export async function getDailyGoal(uid: string): Promise<GoalData> {
-  const response = await fetch(`${BASE_URL}/getGoal/${uid}`);
-  if (!response.ok) throw new Error('Failed to fetch daily goal');
-  return await response.json();
-}
-
 // 5. Get recent meals
 export async function getRecentMeals(uid: string): Promise<{ meals: Meal[] } | null> {
   try {
@@ -98,10 +87,5 @@ export async function getRecentMeals(uid: string): Promise<{ meals: Meal[] } | n
   }
 }
 
-// 6. Get past 7 locked goals with success/fail
-export async function getRecentGoalsWithStatus(uid: string): Promise<LockedGoal[]> {
-  const res = await axios.get<{ lockedGoals: LockedGoal[] }>(
-    `${BASE_URL}/getLockedGoalsWithStatus/${uid}`
-  );
-  return res.data.lockedGoals;
-}
+
+

@@ -18,8 +18,9 @@ import {
   previewCalories,
   saveMealToBackend,
   getTodayStatus,
-  getDailyGoal,
 } from '../utils/geminiApi';
+
+import { getDailyGoal } from '../utils/goalApi';
 
 import { getCurrentUserUid } from '../utils/firebaseAuthApi';
 
@@ -47,8 +48,8 @@ export default function LogMealScreen() {
       if (!uid) return;
 
       const { totalCalories } = await getTodayStatus(uid);
-      const { goal } = await getDailyGoal(uid);
-
+      const res = await getDailyGoal(uid);
+      const goal = (!res)?0:res.goal;
       setTotalCaloriesToday(totalCalories);
       setDailyGoal(goal);
     } catch (err) {
@@ -105,7 +106,13 @@ export default function LogMealScreen() {
 
   const renderStatusText = () => {
     if (totalCaloriesToday === null || dailyGoal === null) return null;
-
+    if(dailyGoal===0) {
+      return (
+        <Text style={[styles.statusText, { color: '#2e7d32' }]}>
+          Set your goal for today!
+        </Text>
+      );
+    }
     const remaining = dailyGoal - totalCaloriesToday;
 
     if (remaining <= 0) {

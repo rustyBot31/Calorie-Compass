@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const FIREBASE_API_KEY = ''; //FIREBASE_API_KEY
+import { FIREBASE_API_KEY } from '../../envVar';//FIREBASE_API_KEY
 const BASE_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
 
 // 🔐 Sign up a user with email + password
@@ -20,7 +20,7 @@ export async function signUpWithEmail(email: string, password: string) {
   if (!res.ok) throw new Error(data.error?.message || 'Signup failed');
 
   await AsyncStorage.setItem('userToken', data.idToken);
-  await AsyncStorage.setItem('userUid', data.localId);
+  await AsyncStorage.setItem('userId', data.localId);
 
   return data;
 }
@@ -42,19 +42,19 @@ export async function loginWithEmail(email: string, password: string) {
   if (!res.ok) throw new Error(data.error?.message || 'Login failed');
 
   await AsyncStorage.setItem('userToken', data.idToken);
-  await AsyncStorage.setItem('userUid', data.localId);
+  await AsyncStorage.setItem('userId', data.localId);
 
   return data;
 }
 
 // 🔓 Logout
 export async function logout() {
-  await AsyncStorage.multiRemove(['userToken', 'userUid']);
+  await AsyncStorage.multiRemove(['userToken', 'userId']);
 }
 
 // 🆔 Get current UID (used in most app features)
 export async function getCurrentUserUid(): Promise<string | null> {
-  return await AsyncStorage.getItem('userUid');
+  return await AsyncStorage.getItem('userId');
 }
 
 // 🔐 Get ID token for authorization (used in backend calls)

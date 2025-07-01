@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { saveDailyGoal, getDailyGoal } from '../utils/goalApi';
-import { getRecentGoalsWithStatus } from '../utils/geminiApi';
+import { getRecentGoalsWithStatus } from '../utils/goalApi';
 import GoalHistoryItem from '../components/GoalHistoryItem'; // ✅ Import the component
 
 export default function SetGoalScreen() {
