@@ -85,8 +85,8 @@ Follow these steps to run the project locally:
 ```ts
 export const FIREBASE_API_KEY = 'your-firebase-api-key';
 export const PROJECT_ID = 'your-firebase-project-id';
-export const BASE_URL = 'https://identitytoolkit.googleapis.com/v1';
-export const FIRESTORE_URL = 'https://firestore.googleapis.com/v1/projects';
+export const BASE_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
+export const FIRESTORE_URL =  `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 export const BACKEND_URL = 'http://your-local-ip:4000'; // must be accessible by both phone and computer
 ```
 
