@@ -16,7 +16,7 @@ import { BASE_URL } from '../utils/firestoreApi';
 import { FIREBASE_API_KEY } from '../../envVar';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-
+import { deleteUserAccount } from '../utils/firebaseAuthApi';
 
 export default function ProfileScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -122,8 +122,8 @@ export default function ProfileScreen() {
 
   const handleDeleteAccount = async () => {
     Alert.alert(
-      'Confirm Deletion',
-      'This will permanently delete your account and all data. Are you sure?',
+      'Delete Account',
+      'Are you sure you want to permanently delete your account? This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -131,45 +131,27 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              setDeleting(true);
-              const token = await getIdToken();
-              if (!uid || !token) throw new Error('Missing auth info');
-
-              // Delete user data (Firestore)
-              await fetch(`${BASE_URL}/deleteUserData/${uid}`, {
-                method: 'DELETE',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-
-              // Delete Firebase Auth user
-              await fetch(
-                `https://identitytoolkit.googleapis.com/v1/accounts:delete?key=${FIREBASE_API_KEY}`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ idToken: token }),
-                }
-              );
-
-              await AsyncStorage.clear();
+              const uid = await getCurrentUserUid(); // however you're fetching it
+              if (!uid) {
+                Alert.alert('Error', 'Could not find user ID.');
+                return;
+              }
+              await deleteUserAccount(uid);
+              Alert.alert('Account deleted', 'Your account has been permanently removed.');
               navigation.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
               });
-              Alert.alert('Account Deleted', 'Your account has been removed.');
-            } catch (err) {
-              console.error(err);
-              Alert.alert('Error', 'Failed to delete account.');
-            } finally {
-              setDeleting(false);
+            } catch (error) {
+              console.error('Error deleting account:', error);
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
             }
           },
         },
       ]
     );
   };
+
 
   if (loading) {
     return <ActivityIndicator style={{ flex: 1 }} size="large" color="#2E7D32" />;

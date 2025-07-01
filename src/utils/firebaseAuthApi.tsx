@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { FIREBASE_API_KEY } from '../../envVar';//FIREBASE_API_KEY
 const BASE_URL = 'https://identitytoolkit.googleapis.com/v1/accounts';
+import { BACKEND_URL } from '../../envVar';
 
 // 🔐 Sign up a user with email + password
 export async function signUpWithEmail(email: string, password: string) {
@@ -79,3 +80,18 @@ export async function resetPassword(email: string): Promise<void> {
     throw new Error(data.error?.message || 'Failed to send password reset email');
   }
 }
+
+export const deleteUserAccount = async (uid: string): Promise<void> => {
+  const response = await fetch(`${BACKEND_URL}/deleteUserAccount`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ uid }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error?.error || 'Failed to delete account');
+  }
+};

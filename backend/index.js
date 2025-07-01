@@ -363,6 +363,30 @@ app.get('/getLast7LockedGoals/:uid', async (req, res) => {
   }
 });
 
+// ✅ Delete user account and all Firestore data
+app.post('/deleteUserAccount', async (req, res) => {
+  const { uid } = req.body;
+
+  if (!uid) {
+    return res.status(400).json({ error: 'Missing uid' });
+  }
+
+  try {
+    const userRef = db.collection('users').doc(uid);
+
+    // Delete all user data recursively
+    await admin.firestore().recursiveDelete(userRef);
+
+    // Delete the Auth account
+    await admin.auth().deleteUser(uid);
+
+    console.log(`[🧨] Deleted user and data for UID: ${uid}`);
+    return res.status(200).json({ message: 'User account and data deleted successfully' });
+  } catch (err) {
+    console.error('[❌] Failed to delete user:', err.message);
+    return res.status(500).json({ error: 'Failed to delete user account and data' });
+  }
+});
 
 
 // ✅ Start server
