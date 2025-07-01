@@ -1,21 +1,49 @@
-// src/screens/SignUpScreen.tsx
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { signUpWithEmail } from '../utils/firebaseAuthApi';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../utils/firestoreApi';
 
 export default function SignUpScreen({ navigation }: any) {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignUp = async () => {
+    if (!name.trim()) {
+      Alert.alert('Validation Error', 'Name is required');
+      return;
+    }
+
     const result = await signUpWithEmail(email, password);
 
     if (result.error || result.error?.message) {
       Alert.alert('Sign Up Failed', result.error?.message || 'Unknown error');
     } else if (result.localId) {
+      // Save to AsyncStorage
       await AsyncStorage.setItem('userId', result.localId);
       await AsyncStorage.setItem('userToken', result.idToken);
+
+      // Save name/email to Firestore
+      try {
+        await fetch(`${BASE_URL}/users/${result.localId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${result.idToken}`,
+          },
+          body: JSON.stringify({
+            fields: {
+              name: { stringValue: name },
+              email: { stringValue: email },
+            },
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to store user profile:', err);
+        Alert.alert('Warning', 'Signed up, but failed to save profile info.');
+      }
+
       navigation.replace('Dashboard');
     } else {
       Alert.alert('Sign Up Failed', 'Unexpected error. Try again.');
@@ -26,6 +54,13 @@ export default function SignUpScreen({ navigation }: any) {
     <View style={styles.container}>
       <Text style={styles.title}>Create Account</Text>
 
+      <TextInput
+        style={styles.input}
+        placeholder="Full Name"
+        placeholderTextColor="#aaa"
+        value={name}
+        onChangeText={setName}
+      />
       <TextInput
         style={styles.input}
         placeholder="Email"

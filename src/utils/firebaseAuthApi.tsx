@@ -61,3 +61,21 @@ export async function getCurrentUserUid(): Promise<string | null> {
 export async function getIdToken(): Promise<string | null> {
   return await AsyncStorage.getItem('userToken');
 }
+
+// 📧 Send password reset email
+export async function resetPassword(email: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}:sendOobCode?key=${FIREBASE_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requestType: 'PASSWORD_RESET',
+      email,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error?.message || 'Failed to send password reset email');
+  }
+}
