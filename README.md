@@ -72,6 +72,34 @@ Follow these steps to run the project locally:
    
 --- 
 
+## Environment setup
+
+```bash
+//envVar.ts
+export const FIREBASE_API_KEY
+export const PROJECT_ID
+export const BASE_URL
+export const FIRESTORE_URL
+export const BACKEND_URL //this is your common ip address. all devices including your mobile and pc on which app and server is running should be connected to this!
+```
+```bash
+//envVarBackend.js
+const GEMINI_API_KEY
+module.exports = {
+    GEMINI_API_KEY
+}
+```
+
+# How to get your serviceAccountKey
+1. Go to Firebase console
+2. Select your project
+3. Navigate to Project Settings (⚙️ gear icon in the top left)
+4. Go to the Service Accounts tab.
+5. Click "Generate new private key"
+6. Confirm and download the JSON file — this is your serviceAccountKey.json
+
+---
+
 ## 🤝 Contributions
 
 Contributions and feedback are welcome! Feel free to open issues or submit PRs.
