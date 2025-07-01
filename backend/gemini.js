@@ -1,6 +1,6 @@
 // gemini.js
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-import {GEMINI_API_KEY} from './envVarBackend';
+const {GEMINI_API_KEY} = require('./envVarBackend')
 // 🔑 Replace this with your Gemini API key (store securely in production)
 const API_KEY = GEMINI_API_KEY; //Add your gemini api key //import from your own created envVar file
 

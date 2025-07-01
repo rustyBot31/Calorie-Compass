@@ -7,7 +7,7 @@ const dayjs = require('dayjs');
 const utc = require('dayjs/plugin/utc');
 const timezone = require('dayjs/plugin/timezone');
 const serviceAccount = require('./serviceAccountKey.json');
-
+const {GEMINI_API_KEY} = require('./envVarBackend')
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -24,8 +24,6 @@ const db = admin.firestore();
 app.use(cors());
 app.use(bodyParser.json());
 
-// ✅ Constants
-const GEMINI_API_KEY = ''; //GEMINI_API_KEY
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 // ✅ Helper: Get IST date
