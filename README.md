@@ -9,7 +9,6 @@
 - 🎯 Daily goal setting and smart progress tracking  
 - 📈 Visual progress bar with color-coded calorie zones  
 - 📅 Recent meals and 7-day goal history    
-- 🌙 Optional dark mode UI (WIP)  
 - 🔁 Seamless backend connection via Express.js  
 
 ---
@@ -22,7 +21,7 @@
 | Backend     | Node.js + Express                         |
 | Auth        | Firebase Auth                             |
 | AI/ML       | Gemini API (AI-generated tips & calories) |
-| Storage     | Firebase or local DB (TBD)                |
+| Storage     | Firebase Firestore                        |
 
 ---
 
