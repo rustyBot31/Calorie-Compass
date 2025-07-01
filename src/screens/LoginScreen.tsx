@@ -1,4 +1,3 @@
-// src/screens/LoginScreen.tsx
 import React, { useState } from 'react';
 import {
   View,
@@ -21,7 +20,6 @@ export default function LoginScreen({ navigation }: any) {
     if (result.error || result.error?.message) {
       Alert.alert('Login Failed', result.error?.message || 'Unknown error');
     } else if (result.localId) {
-      // Save UID and token
       await AsyncStorage.setItem('userId', result.localId);
       await AsyncStorage.setItem('userToken', result.idToken);
       navigation.replace('Dashboard');
@@ -32,7 +30,9 @@ export default function LoginScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back 👋</Text>
+      <Text style={styles.appTitle}>CalorieCompass🧭</Text>
+      <Text style={styles.title}>Your Personalized Calorie Tracker!</Text>
+      <Text style={styles.subtitle}>Welcome Back 👋</Text>
 
       <TextInput
         style={styles.input}
@@ -78,9 +78,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  appTitle: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#1b5e20',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 25,
+    fontWeight: '500',
+    marginBottom: 32,
+    color: '#2e7d32',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: '400',
     marginBottom: 32,
     color: '#2e7d32',
     textAlign: 'center',
@@ -116,5 +130,4 @@ const styles = StyleSheet.create({
     color: '#2e7d32',
     fontWeight: '600',
   },
-
 });

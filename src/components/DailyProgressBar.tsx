@@ -32,7 +32,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 6,
-    color: '#2E7D32',
   },
   progressBar: {
     height: 20,
@@ -47,6 +46,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 14,
     textAlign: 'right',
-    color: '#444',
   },
 });

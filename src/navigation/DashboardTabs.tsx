@@ -20,20 +20,56 @@ export default function DashboardTabs() {
 
           if (route.name === 'Dashboard') iconName = 'home';
           else if (route.name === 'LogMeal') iconName = 'restaurant';
-          else if(route.name === 'SetGoal') iconName = 'locate';
-          else iconName='person';
+          else if (route.name === 'SetGoal') iconName = 'locate';
+          else iconName = 'person';
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         headerShown: true,
+        headerStyle: {
+          backgroundColor: '#1B5E20', // Dark green
+        },
+        headerTitleStyle: {
+          color: '#ffffff',           // White text
+          fontWeight: 'bold',
+          fontSize: 20,
+        },
         tabBarActiveTintColor: '#2E7D32',
         tabBarInactiveTintColor: 'gray',
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="LogMeal" component={LogMealScreen} />
-      <Tab.Screen name="SetGoal" component={SetGoalScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{
+        tabBarLabel: 'Dashboard',
+        headerTitle: 'CalorieCompass',
+        headerStyle: {
+          backgroundColor: '#1B5E20', // your custom color
+        },
+        headerTintColor: '#fff', // white text/icons
+      }} />
+      <Tab.Screen name="LogMeal" component={LogMealScreen} options={{
+        tabBarLabel: 'Log Meal',
+        headerTitle: 'CalorieCompass',
+        headerStyle: {
+          backgroundColor: '#1B5E20', // your custom color
+        },
+        headerTintColor: '#fff', // white text/icons
+      }} />
+      <Tab.Screen name="SetGoal" component={SetGoalScreen} options={{
+        tabBarLabel: 'Set Goal',
+        headerTitle: 'CalorieCompass',
+        headerStyle: {
+          backgroundColor: '#1B5E20', // your custom color
+        },
+        headerTintColor: '#fff', // white text/icons
+      }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{
+        tabBarLabel: 'Profile',
+        headerTitle: 'CalorieCompass',
+        headerStyle: {
+          backgroundColor: '#1B5E20', // your custom color
+        },
+        headerTintColor: '#fff', // white text/icons
+      }} />
     </Tab.Navigator>
   );
 }

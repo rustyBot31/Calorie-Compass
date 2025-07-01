@@ -52,7 +52,10 @@ export default function SignUpScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+
+      <Text style={styles.appTitle}>CalorieCompass🧭</Text>
+      <Text style={styles.title}>Your Personalized Calorie Tracker!</Text>
+      <Text style={styles.subtitle}>Hello there!👋</Text>
 
       <TextInput
         style={styles.input}
@@ -98,9 +101,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
   },
+  appTitle: {
+    fontSize: 40,
+    fontWeight: '700',
+    color: '#1b5e20',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 25,
+    fontWeight: '500',
+    marginBottom: 32,
+    color: '#2e7d32',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: '400',
     marginBottom: 32,
     color: '#2e7d32',
     textAlign: 'center',

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   Alert,
   Text,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/Header';
@@ -14,13 +15,11 @@ import CalorieCard from '../components/CalorieCard';
 import DailyProgressBar from '../components/DailyProgressBar';
 import TipCard from '../components/TipCard';
 import MealHistoryItem from '../components/mealHistoryItem';
-import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import {
-  getTodayStatus,
-  getRecentMeals,
-} from '../utils/geminiApi';
+import { getTodayStatus, getRecentMeals } from '../utils/geminiApi';
 import { getDailyGoal } from '../utils/goalApi';
+import { getCurrentUserUid } from '../utils/firebaseAuthApi';
+import { BACKEND_URL } from '../../envVar';
 
 const generalTips = [
   'Stay hydrated! Water supports every system in your body.',
@@ -51,44 +50,50 @@ export default function DashboardScreen({ navigation }: any) {
   const [recentMeals, setRecentMeals] = useState<any[]>([]);
   const [rotatingTip, setRotatingTip] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [name, setName] = useState('');
+
+  let tipInterval: NodeJS.Timeout;
+
+  const fetchDashboardData = async () => {
+    try {
+      const uid = await AsyncStorage.getItem('userId');
+      if (!uid) {
+        Alert.alert('Error', 'User ID not found.');
+        return;
+      }
+
+      const goalData = await getDailyGoal(uid);
+      const statusData = await getTodayStatus(uid);
+      const recent = await getRecentMeals(uid);
+
+      setDailyGoal(goalData?.goal ?? null);
+      setConsumed(statusData?.totalCalories ?? 0);
+      setRecentMeals(recent?.meals ?? []);
+
+      const randomIndex = Math.floor(Math.random() * generalTips.length);
+      setRotatingTip(generalTips[randomIndex]);
+    } catch (error) {
+      console.error('Failed to fetch dashboard data:', error);
+      Alert.alert('Error', 'Could not load dashboard.');
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setRefreshing(false);
+  };
 
   useFocusEffect(
     useCallback(() => {
-      let tipInterval: NodeJS.Timeout;
+      setLoading(true);
+      fetchDashboardData().finally(() => setLoading(false));
 
-      const fetchDashboardData = async () => {
-        setLoading(true);
-        try {
-          const uid = await AsyncStorage.getItem('userId');
-          if (!uid) {
-            Alert.alert('Error', 'User ID not found.');
-            return;
-          }
-
-          const goalData = await getDailyGoal(uid);
-          const statusData = await getTodayStatus(uid);
-          const recent = await getRecentMeals(uid);
-
-          setDailyGoal(goalData?.goal ?? null);
-          setConsumed(statusData?.totalCalories ?? 0);
-          setRecentMeals(recent?.meals ?? []);
-
-          const initialIndex = Math.floor(Math.random() * generalTips.length);
-          setRotatingTip(generalTips[initialIndex]);
-
-          tipInterval = setInterval(() => {
-            const index = Math.floor(Math.random() * generalTips.length);
-            setRotatingTip(generalTips[index]);
-          }, 300000); // 5 minutes
-        } catch (error) {
-          console.error('Failed to fetch dashboard data:', error);
-          Alert.alert('Error', 'Could not load dashboard.');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      fetchDashboardData();
+      tipInterval = setInterval(() => {
+        const index = Math.floor(Math.random() * generalTips.length);
+        setRotatingTip(generalTips[index]);
+      }, 300000); // 5 minutes
 
       return () => {
         if (tipInterval) clearInterval(tipInterval);
@@ -96,9 +101,25 @@ export default function DashboardScreen({ navigation }: any) {
     }, [])
   );
 
-  // Tip and color logic
+  useEffect(() => {
+    const fetchName = async () => {
+      const uid = await getCurrentUserUid();
+      if (!uid) return;
+      try {
+        const res = await fetch(`${BACKEND_URL}/getUserProfile/${uid}`);
+        const text = await res.text();
+        const data = JSON.parse(text);
+        setName(data.name || '');
+      } catch (error) {
+        console.error('Error fetching user name:', error);
+      }
+    };
+
+    fetchName();
+  }, []);
+
   let tipMessage = '';
-  let progressColor = '#4CAF50'; // default green
+  let progressColor = '#4CAF50';
   if (consumed !== null && dailyGoal) {
     const percent = (consumed / dailyGoal) * 100;
     if (percent >= 100) {
@@ -117,9 +138,13 @@ export default function DashboardScreen({ navigation }: any) {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-
-      <Header title="Hello, welcome back!" />
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <Header title={`Welcome Back, ${name}!`} />
 
       {dailyGoal !== null && (
         <TouchableOpacity onPress={() => navigation.navigate('SetGoal')}>
@@ -135,19 +160,21 @@ export default function DashboardScreen({ navigation }: any) {
           <DailyProgressBar consumed={consumed ?? 0} goal={dailyGoal} color={progressColor} />
           <TipCard tip={tipMessage} extraTip={rotatingTip} color={progressColor} />
 
-          {recentMeals.length > 0 && (
-            <View style={{ marginTop: 24 }}>
-              <Text style={styles.historyTitle}>📝 Recent Meals</Text>
-              {recentMeals.map((m, index) => (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📝 Recent Meals</Text>
+            {recentMeals.length > 0 ? (
+              recentMeals.map((m, index) => (
                 <MealHistoryItem
                   key={index}
                   meal={m.meal}
                   calories={m.calories}
                   timestamp={m.createdAt}
                 />
-              ))}
-            </View>
-          )}
+              ))
+            ) : (
+              <Text style={styles.emptyText}>No meals logged today yet.</Text>
+            )}
+          </View>
         </>
       ) : (
         <Text style={styles.noGoalText}>
@@ -161,46 +188,37 @@ export default function DashboardScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f4fdf4',
     flexGrow: 1,
-  },
-  logoutContainer: {
-    alignItems: 'flex-end',
-    padding: 8,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffecec',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: 'flex-end',
-  },
-  logoutText: {
-    marginLeft: 6,
-    color: '#d32f2f',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  noGoalText: {
-    marginTop: 40,
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#777',
   },
   goalText: {
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
     color: '#2e7d32',
-    marginTop: 8,
+    marginTop: 12,
     marginBottom: 16,
   },
-  historyTitle: {
+  noGoalText: {
+    marginTop: 40,
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#777',
+    paddingHorizontal: 20,
+  },
+  section: {
+    marginTop: 24,
+  },
+  sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 12,
     color: '#333',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 8,
   },
 });

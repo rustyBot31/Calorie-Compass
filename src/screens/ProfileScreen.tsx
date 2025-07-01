@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -35,7 +37,6 @@ export default function ProfileScreen() {
         const token = await getIdToken();
 
         if (!userId || !token) throw new Error('User not authenticated');
-
         setUid(userId);
 
         const res = await fetch(`${BASE_URL}/users/${userId}`, {
@@ -73,7 +74,6 @@ export default function ProfileScreen() {
       const token = await getIdToken();
       if (!uid || !token) throw new Error('Missing user info');
 
-      // Update Firestore name
       await fetch(`${BASE_URL}/users/${uid}`, {
         method: 'PATCH',
         headers: {
@@ -85,7 +85,6 @@ export default function ProfileScreen() {
         }),
       });
 
-      // Update password (if provided)
       if (newPassword.trim()) {
         await fetch(
           `https://identitytoolkit.googleapis.com/v1/accounts:update?key=${FIREBASE_API_KEY}`,
@@ -131,7 +130,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              const uid = await getCurrentUserUid(); // however you're fetching it
+              const uid = await getCurrentUserUid();
               if (!uid) {
                 Alert.alert('Error', 'Could not find user ID.');
                 return;
@@ -152,14 +151,13 @@ export default function ProfileScreen() {
     );
   };
 
-
   if (loading) {
     return <ActivityIndicator style={{ flex: 1 }} size="large" color="#2E7D32" />;
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.sectionTitle}>👤 Profile</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Your Profile</Text>
 
       <Text style={styles.label}>Email</Text>
       <TextInput value={email} editable={false} style={[styles.input, styles.disabledInput]} />
@@ -176,48 +174,82 @@ export default function ProfileScreen() {
         placeholder="Leave blank to skip"
       />
 
-      <View style={styles.button}>
-        <Button
-          title={updating ? 'Updating...' : 'Update Profile'}
-          onPress={handleUpdate}
-          color="#2E7D32"
-          disabled={updating}
-        />
-      </View>
+      <TouchableOpacity style={styles.buttonPrimary} onPress={handleUpdate} disabled={updating}>
+        <Text style={styles.buttonText}>{updating ? 'Updating...' : 'Update Profile'}</Text>
+      </TouchableOpacity>
 
-      <View style={styles.button}>
-        <Button title="Logout" onPress={handleLogout} color="#C62828" />
-      </View>
+      <TouchableOpacity style={styles.buttonSecondary} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Logout</Text>
+      </TouchableOpacity>
 
-      <View style={styles.button}>
-        <Button
-          title={deleting ? 'Deleting...' : 'Delete Account'}
-          onPress={handleDeleteAccount}
-          color="#8B0000"
-          disabled={deleting}
-        />
-      </View>
-    </View>
+      <TouchableOpacity style={styles.buttonDanger} onPress={handleDeleteAccount} disabled={deleting}>
+        <Text style={styles.buttonText}>{deleting ? 'Deleting...' : 'Delete Account'}</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, flex: 1, backgroundColor: '#fff' },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
+  container: {
+    padding: 20,
+    backgroundColor: '#f4fdf4',
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: '#2E7D32',
     textAlign: 'center',
+    marginBottom: 4,
   },
-  label: { fontWeight: 'bold', marginTop: 16 },
+  subtitle: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  label: {
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 4,
+    color: '#333',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 8,
-    marginTop: 4,
+    backgroundColor: '#fff',
   },
-  disabledInput: { backgroundColor: '#eee' },
-  button: { marginTop: 24 },
+  disabledInput: {
+    backgroundColor: '#eee',
+  },
+  buttonPrimary: {
+    backgroundColor: '#2E7D32',
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  buttonSecondary: {
+    backgroundColor: '#6B7280',
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  buttonDanger: {
+    backgroundColor: '#B91C1C',
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
 });

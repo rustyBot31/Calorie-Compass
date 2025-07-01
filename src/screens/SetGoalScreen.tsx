@@ -3,17 +3,18 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   Switch,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+  RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveDailyGoal, getDailyGoal } from '../utils/goalApi';
-import { getRecentGoalsWithStatus } from '../utils/goalApi';
-import GoalHistoryItem from '../components/GoalHistoryItem'; // ✅ Import the component
+import { saveDailyGoal, getDailyGoal, getRecentGoalsWithStatus } from '../utils/goalApi';
+import GoalHistoryItem from '../components/GoalHistoryItem';
 
 export default function SetGoalScreen() {
   const [goal, setGoal] = useState('');
@@ -22,58 +23,52 @@ export default function SetGoalScreen() {
   const [isLockedForToday, setIsLockedForToday] = useState(false);
   const [recentGoals, setRecentGoals] = useState<any[]>([]);
   const [goalsLoading, setGoalsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadGoalData = async () => {
+    const uid = await AsyncStorage.getItem('userId');
+    if (!uid) return;
+
+    try {
+      const goalData = await getDailyGoal(uid);
+      const today = new Date().toISOString().split('T')[0];
+      if (goalData && goalData.date === today) {
+        setGoal(goalData.goal.toString());
+        setLocked(goalData.locked);
+        setIsLockedForToday(goalData.locked);
+      } else {
+        setGoal('');
+        setLocked(false);
+        setIsLockedForToday(false);
+      }
+
+      const recent = await getRecentGoalsWithStatus(uid);
+      setRecentGoals(recent);
+    } catch (error) {
+      console.error('Error loading goal or history:', error);
+    } finally {
+      setGoalsLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    (async () => {
-      const uid = await AsyncStorage.getItem('userId');
-      if (uid) {
-        try {
-          const goalData = await getDailyGoal(uid);
-          const today = new Date().toISOString().split('T')[0];
-          if (goalData && goalData.date === today) {
-            setGoal(goalData.goal.toString());
-            setLocked(goalData.locked);
-            setIsLockedForToday(goalData.locked);
-          } else {
-            setGoal('');
-            setLocked(false);
-            setIsLockedForToday(false);
-          }
-
-          const recent = await getRecentGoalsWithStatus(uid);
-          setRecentGoals(recent);
-        } catch (error) {
-          console.error('Error loading goal or history:', error);
-        } finally {
-          setGoalsLoading(false);
-        }
-      }
-    })();
+    loadGoalData();
   }, []);
 
   const handleSaveGoal = async () => {
     const uid = await AsyncStorage.getItem('userId');
-    if (!uid) {
-      Alert.alert('Error', 'User not found.');
-      return;
-    }
+    if (!uid) return Alert.alert('Error', 'User not found.');
 
     const parsedGoal = parseInt(goal);
-    if (isNaN(parsedGoal)) {
-      Alert.alert('Error', 'Please enter a valid number.');
-      return;
-    }
+    if (isNaN(parsedGoal)) return Alert.alert('Error', 'Please enter a valid number.');
 
     try {
       setLoading(true);
       await saveDailyGoal(uid, parsedGoal, locked);
-      Alert.alert(
-        'Saved',
-        locked ? 'Goal saved and locked for today!' : 'Goal saved for today!'
-      );
+      Alert.alert('Success', locked ? 'Goal saved and locked for today!' : 'Goal saved!');
       setIsLockedForToday(locked);
 
-      // ✅ Refetch recent goals to update list immediately
       const updatedGoals = await getRecentGoalsWithStatus(uid);
       setRecentGoals(updatedGoals);
     } catch (err) {
@@ -85,38 +80,60 @@ export default function SetGoalScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Set Your Daily Calorie Goal</Text>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => {
+          setRefreshing(true);
+          loadGoalData();
+        }} />
+      }
+    >
+      <Text style={styles.title}>🎯 Set Your Daily Calorie Goal</Text>
 
-      <TextInput
-        style={styles.input}
-        value={goal}
-        onChangeText={setGoal}
-        keyboardType="numeric"
-        editable={!isLockedForToday}
-        placeholder="e.g., 2200"
-      />
-
-      <View style={styles.switchContainer}>
-        <Text style={{ fontSize: 16 }}>Lock Goal for Today</Text>
-        <Switch
-          value={locked}
-          onValueChange={setLocked}
-          disabled={isLockedForToday}
+      <View style={styles.card}>
+        <Text style={styles.label}>Your Goal (kcal):</Text>
+        <TextInput
+          style={[styles.input, isLockedForToday && styles.disabledInput]}
+          value={goal}
+          onChangeText={setGoal}
+          keyboardType="numeric"
+          editable={!isLockedForToday}
+          placeholder="e.g., 2200"
+          placeholderTextColor="#aaa"
         />
+
+        <View style={styles.switchRow}>
+          <Text style={styles.switchLabel}>Lock Goal for Today</Text>
+          <Switch
+            value={locked}
+            onValueChange={setLocked}
+            disabled={isLockedForToday}
+            thumbColor={locked ? '#ffffff' : '#f4f3f4'}
+            trackColor={{ false: '#ccc', true: '#66bb6a' }}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            (loading || isLockedForToday) && styles.disabledButton,
+          ]}
+          onPress={handleSaveGoal}
+          disabled={loading || isLockedForToday}
+        >
+          <Text style={styles.saveButtonText}>
+            {loading ? 'Saving...' : 'Save Goal'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      <Button
-        title={loading ? 'Saving...' : 'Save Goal'}
-        onPress={handleSaveGoal}
-        disabled={loading || isLockedForToday}
-      />
+      <Text style={styles.historyHeader}>📅 Past 7 Locked Goals</Text>
 
-      <Text style={styles.historyHeader}>📅 Last 7 Locked Goals</Text>
       {goalsLoading ? (
-        <ActivityIndicator size="large" color="#333" style={{ marginTop: 20 }} />
+        <ActivityIndicator size="large" color="#66bb6a" style={{ marginTop: 16 }} />
       ) : recentGoals.length === 0 ? (
-        <Text style={styles.noData}>No locked goals available.</Text>
+        <Text style={styles.noData}>No locked goals to show yet.</Text>
       ) : (
         recentGoals.map((item, index) => (
           <GoalHistoryItem
@@ -134,37 +151,80 @@ export default function SetGoalScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: '#f4fdf4',
+    flexGrow: 1,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2e7d32',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
   },
   label: {
-    fontSize: 18,
-    marginBottom: 12,
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
+    padding: Platform.OS === 'ios' ? 12 : 10,
     fontSize: 16,
+    borderRadius: 10,
     marginBottom: 20,
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    color: '#000',
   },
-  switchContainer: {
+  disabledInput: {
+    backgroundColor: '#f0f0f0',
+    color: '#888',
+  },
+  switchRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  switchLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  saveButton: {
+    backgroundColor: '#4caf50',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#a5d6a7',
   },
   historyHeader: {
-    marginTop: 30,
+    marginTop: 28,
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 10,
+    fontWeight: '600',
+    color: '#2e7d32',
+    marginBottom: 12,
   },
   noData: {
     textAlign: 'center',
-    color: '#999',
     fontSize: 15,
-    marginTop: 20,
+    color: '#999',
+    marginTop: 16,
   },
 });

@@ -388,8 +388,23 @@ app.post('/deleteUserAccount', async (req, res) => {
   }
 });
 
+app.get('/getUserProfile/:uid', async (req, res) => {
+  const uid = req.params.uid;
+  try {
+    const userDoc = await admin.firestore().collection('users').doc(uid).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(userDoc.data());
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // ✅ Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
+

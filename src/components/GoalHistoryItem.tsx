@@ -31,9 +31,15 @@ const styles = StyleSheet.create({
   },
   success: {
     backgroundColor: '#e0f5e0', // Light green
+    borderColor: '#2e7d32',
+    borderWidth: 1,             
+    borderRadius: 12,
   },
   danger: {
     backgroundColor: '#fbeaea', // Light red
+    borderWidth: 1,             
+    borderRadius: 12,
+    borderColor: '#8B0000'
   },
   date: {
     fontSize: 16,
