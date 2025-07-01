@@ -41,6 +41,37 @@ To run this project locally, ensure you have the following installed or set up:
 
 ---
 
+## 🚀 Setup Instructions
+
+Follow these steps to run the project locally:
+
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/rustyBot31/Calorie-Compass.git
+   cd Calorie-Compass
+
+2. **Install dependencies**
+   ```bash
+   npm install
+
+3. **Configure Firebase and Gemini keys**
+   - Create a file at the root named envVar.ts and populate it with your Firebase API key (structure given below)
+   - Create a file in backend folder named envVarBackend.js and populate it with your Gemini API key (structure given below)
+   - Make sure the backend has a valid serviceAccountKey.json inside the backend/ folder. (instruction  given below)
+
+4. **Start the backend server**
+   ```bash
+   cd backend
+   node index.js
+
+5. **Start expo app**
+   ```bash
+   npx expo start --clear
+   ```
+   Scan the QR code with the Expo Go app on your mobile device.
+   
+--- 
+
 ## 🤝 Contributions
 
 Contributions and feedback are welcome! Feel free to open issues or submit PRs.
