@@ -43,6 +43,7 @@ To run this project locally, ensure you have the following:
 7. **Expo Dev Client (Custom Build)** – See instructions below.
 
 > 📌 **Note:** This app now uses a **custom Expo Dev Client**, not Expo Go. You’ll need to build the development client once using `eas build`.
+> 📌 **Note:** This current build is compatible with Android only. For iOS devices, check [Expo Docs](https://docs.expo.dev/develop/development-builds/create-a-build/)
 
 ---
 
