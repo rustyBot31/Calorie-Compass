@@ -114,7 +114,8 @@ Scan the QR code from your terminal with the custom Dev Client installed on your
 | Version | Description                      | Notes                          |
 |---------|----------------------------------|--------------------------------|
 | 1.0.0   | Expo Go Initial Release          | Deprecated                     |
-| 1.1.0   | Switched to Expo Dev Build (Android only (for now))     | Custom Dev Client required     |
+| 1.1.0   | Switched to Expo Dev Build (Android only (for now))     | Deprecated     |
+| 1.1.1   | Minor bug fixes                  | Custom Dev Client required     |
 ---
 
 ## 🔑 How to Generate `serviceAccountKey.json`
