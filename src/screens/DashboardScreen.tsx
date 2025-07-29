@@ -16,8 +16,7 @@ import DailyProgressBar from '../components/DailyProgressBar';
 import TipCard from '../components/TipCard';
 import MealHistoryItem from '../components/mealHistoryItem';
 import { useFocusEffect } from '@react-navigation/native';
-import { getTodayStatus, getRecentMeals } from '../utils/geminiApi';
-import { getDailyGoal } from '../utils/goalApi';
+import { getTodayStatus, getRecentMeals, getDailyGoal } from '../utils/backendApi';
 import { getCurrentUserUid } from '../utils/firebaseAuthApi';
 import { BACKEND_URL } from '../../envVar';
 

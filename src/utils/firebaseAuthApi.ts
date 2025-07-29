@@ -18,7 +18,9 @@ export async function signUpWithEmail(email: string, password: string) {
 
   const data = await res.json();
 
-  if (!res.ok) return { error: data.error };
+  if (!res.ok) {
+    return { error: data.error };
+  }
 
   await AsyncStorage.setItem('userToken', data.idToken);
   await AsyncStorage.setItem('userId', data.localId);

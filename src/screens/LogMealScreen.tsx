@@ -17,8 +17,8 @@ import {
   previewCalories,
   saveMealToBackend,
   getTodayStatus,
-} from '../utils/geminiApi';
-import { getDailyGoal } from '../utils/goalApi';
+} from '../utils/backendApi';
+import { getDailyGoal } from '../utils/backendApi';
 import { getCurrentUserUid } from '../utils/firebaseAuthApi';
 
 export default function LogMealScreen() {

@@ -13,7 +13,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { saveDailyGoal, getDailyGoal, getRecentGoalsWithStatus } from '../utils/goalApi';
+import { saveDailyGoal, getDailyGoal, getRecentGoalsWithStatus } from '../utils/backendApi';
 import GoalHistoryItem from '../components/GoalHistoryItem';
 
 export default function SetGoalScreen() {

@@ -1,35 +1,12 @@
 {
   "expo": {
-    "name": "calorie-compass",
-    "slug": "calorie-compass",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.caloriecompass"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
     "extra": {
       "eas": {
-        "projectId": "9546a5e1-b5d2-4bed-96c7-905fea2a5cb0"
+        "projectId": "e7bb1ba7-5787-4845-bab0-c5bd03da7ef0"
       }
+    },
+    "android": {
+      "package": "com.vasubhakt.caloriecompass"
     }
   }
 }
